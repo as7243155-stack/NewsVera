@@ -8,6 +8,14 @@ export async function getUserReports(userId: string) {
     .order('created_at', { ascending: false });
 }
 
+export async function getReportById(reportId: string) {
+  return supabase
+    .from('reports')
+    .select('*')
+    .eq('id', reportId)
+    .single();
+}
+
 export async function deleteReport(reportId: string) {
   return supabase
     .from('reports')

@@ -21,11 +21,15 @@ type Page =
 interface NavbarProps {
   page: Page;
   onNavigate: (page: Page) => void;
+  isLoggedIn: boolean;
+  onSignOut: () => void;
 }
 
 export default function Navbar({
   page,
   onNavigate,
+  isLoggedIn,
+  onSignOut,
 }: NavbarProps) {
   const [open, setOpen] = useState(false);
 
@@ -39,6 +43,11 @@ export default function Navbar({
   const go = (next: Page) => {
     setOpen(false);
     onNavigate(next);
+  };
+
+  const handleSignOut = async () => {
+    setOpen(false);
+    await onSignOut();
   };
 
   return (
@@ -69,20 +78,40 @@ export default function Navbar({
             <Search size={19} />
           </button>
 
-          <button
-            className="sign-in"
-            onClick={() => go('signin')}
-          >
-            Sign In
-          </button>
+          {isLoggedIn ? (
+            <>
+              <button
+                className="sign-in"
+                onClick={() => go('dashboard')}
+              >
+                Dashboard
+              </button>
 
-          <button
-            className="dark-button compact"
-            onClick={() => go('signup')}
-          >
-            Get Started
-            <ArrowRight size={15} />
-          </button>
+              <button
+                className="dark-button compact"
+                onClick={handleSignOut}
+              >
+                Sign Out
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                className="sign-in"
+                onClick={() => go('signin')}
+              >
+                Sign In
+              </button>
+
+              <button
+                className="dark-button compact"
+                onClick={() => go('signup')}
+              >
+                Get Started
+                <ArrowRight size={15} />
+              </button>
+            </>
+          )}
         </div>
 
         <button

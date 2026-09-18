@@ -9,12 +9,17 @@ import NewsCard from '@/components/news/NewsCard';
 import SectionEyebrow from '@/components/layout/SectionEyebrow';
 
 interface HomePageProps {
-  onVerify: () => void;
+  onVerify: (
+    content: string,
+    mode: 'text' | 'url'
+  ) => Promise<void>;
+  onCheckLink: (url: string) => Promise<void>;
   onExplore: () => void;
 }
 
 export default function HomePage({
   onVerify,
+  onCheckLink,
   onExplore,
 }: HomePageProps) {
   const featuredStories = useMemo(
@@ -26,6 +31,7 @@ export default function HomePage({
     <main>
       <Hero
         onVerify={onVerify}
+        onCheckLink={onCheckLink}
         onExplore={onExplore}
       />
 

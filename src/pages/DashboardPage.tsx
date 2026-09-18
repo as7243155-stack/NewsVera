@@ -147,8 +147,8 @@ export default function DashboardPage({
               className="report-view"
               onClick={() => onNavigate('/verify')}
             >
-              Start verification
-              <ArrowRight size={15} />
+              View report
+              <ArrowUpRight size={15} />
             </button>
           </div>
         )}
@@ -176,7 +176,7 @@ export default function DashboardPage({
 
               <button
                 className="report-view"
-                onClick={() => onNavigate('/result')}
+                onClick={() => onNavigate(`/result/${report.id}`)}
               >
                 View report
                 <ArrowUpRight size={15} />

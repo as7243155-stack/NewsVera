@@ -17,6 +17,27 @@ import LoadingAnalysis from './LoadingAnalysis';
 
 type InputMode = 'text' | 'url' | 'image';
 
+function getSourceName(url: string): string {
+  try {
+    const hostname = new URL(url).hostname
+      .replace(/^www\./, '');
+
+    const knownSources: Record<string, string> = {
+      'reuters.com': 'Reuters',
+      'apnews.com': 'AP',
+      'bbc.com': 'BBC',
+      'afp.com': 'AFP',
+      'nasa.gov': 'NASA',
+      'who.int': 'WHO',
+      'un.org': 'United Nations',
+    };
+
+    return knownSources[hostname] || hostname;
+  } catch {
+    return 'Web Source';
+  }
+}
+
 export interface VerificationResult {
   score: number;
   verdict: string;
@@ -65,95 +86,108 @@ export default function VerificationWorkspace({
     ? value.trim().split(/\s+/).length
     : 0;
 
-  const submit = () => {
-    setError('');
+  const submit = async () => {
+  setError('');
 
-    if (
-      mode === 'text' &&
-      wordCount < 10
-    ) {
-      setError(
-        'Please enter at least 10 words so we can examine the claim.'
+  if (
+    mode === 'text' &&
+    wordCount < 10
+  ) {
+    setError(
+      'Please enter at least 10 words so we can examine the claim.'
+    );
+    return;
+  }
+
+  if (
+    mode === 'url' &&
+    !/^https?:\/\/[^\s]+\.[^\s]+$/i.test(value)
+  ) {
+    setError(
+      'Please enter a valid-looking article URL, including https://.'
+    );
+    return;
+  }
+
+  if (
+    mode === 'image' &&
+    !file
+  ) {
+    setError(
+      'Please upload an image or screenshot to continue.'
+    );
+    return;
+  }
+
+  // Image OCR will be connected in the next step.
+  if (mode === 'image') {
+    setError(
+      'Image verification is coming next. Please use text or URL for now.'
+    );
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    const response = await fetch(
+      'http://127.0.0.1:8000/verify',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          mode,
+          content: value.trim(),
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.detail || 'Verification request failed.'
       );
-      return;
     }
 
-    if (
-      mode === 'url' &&
-      !/^https?:\/\/[^\s]+\.[^\s]+$/i.test(value)
-    ) {
-      setError(
-        'Please enter a valid-looking article URL, including https://.'
-      );
-      return;
-    }
+    const sources = Array.isArray(data.sources)
+      ? data.sources
+          .filter(
+            (source: any) =>
+              source.url &&
+              source.title
+          )
+          .slice(0, 4)
+          .map((source: any) => ({
+            name: getSourceName(source.url),
+            title: source.title,
+            type: 'Web source',
+            description:
+              source.content ||
+              'Evidence retrieved during verification.',
+            url: source.url,
+          }))
+      : [];
 
-    if (
-      mode === 'image' &&
-      !file
-    ) {
-      setError(
-        'Please upload an image or screenshot to continue.'
-      );
-      return;
-    }
-
-    setLoading(true);
-
-    let index = 0;
-
-    const interval =
-      window.setInterval(() => {
-        index += 1;
-
-        if (
-          index >= 5
-        ) {
-          window.clearInterval(interval);
-
-          window.setTimeout(() => {
-            setLoading(false);
-
-            onResult({
-  score: 78,
-  verdict: 'Partially Accurate',
-  input:
-    mode === 'image'
-      ? file?.name || 'Uploaded image'
-      : value,
-  analysis: [
-    'The central claim is supported by multiple independent reports.',
-    'One important detail differs between the original claim and available evidence.',
-    'The wording appears stronger than what the cited evidence establishes.',
-  ],
-  sources: [
-    {
-      name: 'Reuters',
-      title: 'Reporting and context around the central claim',
-      type: 'International news agency',
-      description:
-        'A corroborating report with context on the event and timeline.',
-    },
-    {
-      name: 'AP',
-      title: 'What the available records show',
-      type: 'Independent reporting',
-      description:
-        'A second account that helps clarify the important detail.',
-    },
-    {
-      name: 'BBC',
-      title: 'A closer look at the wider story',
-      type: 'Background analysis',
-      description:
-        'Background reporting that adds perspective without overstating the evidence.',
-    },
-  ],
-});
-          }, 360);
-        }
-      }, 560);
-  };
+    onResult({
+      score: data.verification.score,
+      verdict: data.verification.verdict,
+      input: data.input,
+      analysis: data.verification.analysis,
+      sources,
+    });
+  } catch (err) {
+    setError(
+      err instanceof Error
+        ? err.message
+        : 'Something went wrong while verifying the claim.'
+    );
+  } finally {
+    setLoading(false);
+  }
+};
 
   const chooseFile = (
     selected: File | undefined
