@@ -15,7 +15,6 @@ import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 
 import HomePage from './pages/HomePage';
-import VerifyPage from './pages/VerifyPage';
 import ResultPage from './pages/ResultPage';
 import ExplorePage from './pages/ExplorePage';
 import AboutPage from './pages/AboutPage';
@@ -44,7 +43,9 @@ function ProtectedRoute({
 
 function getSourceName(url: string): string {
   try {
-    const hostname = new URL(url).hostname.replace(/^www\./, '');
+    const hostname = new URL(url)
+      .hostname
+      .replace(/^www\./, '');
 
     const knownSources: Record<string, string> = {
       'reuters.com': 'Reuters',
@@ -61,6 +62,7 @@ function getSourceName(url: string): string {
     return 'Web Source';
   }
 }
+
 function SavedReportPage({
   onAnother,
 }: {
@@ -68,7 +70,9 @@ function SavedReportPage({
 }) {
   const { reportId } = useParams();
 
-  const [report, setReport] = useState<VerificationResult | null>(null);
+  const [report, setReport] =
+    useState<VerificationResult | null>(null);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -85,7 +89,8 @@ function SavedReportPage({
 
       if (reportError || !data) {
         setError(
-          reportError?.message || 'Unable to load this report.'
+          reportError?.message ||
+            'Unable to load this report.'
         );
         setLoading(false);
         return;
@@ -93,7 +98,8 @@ function SavedReportPage({
 
       const analysis = Array.isArray(data.ai_comments)
         ? data.ai_comments.filter(
-            (item): item is string => typeof item === 'string'
+            (item): item is string =>
+              typeof item === 'string'
           )
         : [];
 
@@ -106,9 +112,13 @@ function SavedReportPage({
                 source.url
             )
             .map((source: any) => ({
-              name: source.name || getSourceName(source.url),
+              name:
+                source.name ||
+                getSourceName(source.url),
               title: source.title,
-              type: source.type || 'Web source',
+              type:
+                source.type ||
+                'Web source',
               description:
                 source.description ||
                 'Evidence retrieved during verification.',
@@ -166,7 +176,7 @@ function SavedReportPage({
 
         <button
           className="dark-button"
-          onClick={() => onAnother()}
+          onClick={onAnother}
         >
           Verify another story
         </button>
@@ -185,15 +195,18 @@ function SavedReportPage({
 function AppContent() {
   const navigate = useNavigate();
   const location = useLocation();
+
   const currentPage =
     location.pathname === '/'
       ? 'home'
       : location.pathname.split('/')[1] || 'home';
 
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] =
+    useState<User | null>(null);
+
   const [result, setResult] =
     useState<VerificationResult | null>(null);
-  
+
   const [linkCheckResult, setLinkCheckResult] =
     useState<any>(null);
 
@@ -204,9 +217,11 @@ function AppContent() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
+    } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setUser(session?.user ?? null);
+      }
+    );
 
     return () => subscription.unsubscribe();
   }, []);
@@ -226,101 +241,105 @@ function AppContent() {
   /*
    * Homepage verification.
    *
-   * This sends the text entered in the homepage
-   * directly to the real FastAPI verification API.
+   * The homepage is now the main verification workspace.
+   * It sends text or URL input directly to the FastAPI
+   * verification API.
    */
   const handleHomeVerify = async (
-  content: string,
-  mode: 'text' | 'url'
-) => {
-  if (!user) {
-    navigate('/signin');
-    return;
-  }
-
-  const response = await fetch(
-    'http://127.0.0.1:8000/verify',
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        mode,
-        content: content.trim(),
-      }),
+    content: string,
+    mode: 'text' | 'url'
+  ) => {
+    if (!user) {
+      navigate('/signin');
+      return;
     }
-  );
 
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(
-      data.detail || 'Verification request failed.'
+    const response = await fetch(
+      'http://127.0.0.1:8000/verify',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          mode,
+          content: content.trim(),
+        }),
+      }
     );
-  }
 
-  const sources = Array.isArray(data.sources)
-    ? data.sources
-        .filter(
-          (source: any) =>
-            source.url &&
-            source.title
-        )
-        .slice(0, 4)
-        .map((source: any) => ({
-          name: getSourceName(source.url),
-          title: source.title,
-          type: 'Web source',
-          description:
-            source.content ||
-            'Evidence retrieved during verification.',
-          url: source.url,
-        }))
-    : [];
+    const data = await response.json();
 
-  const verificationResult: VerificationResult = {
-    score: data.verification.score,
-    verdict: data.verification.verdict,
-    input: data.input,
-    analysis: data.verification.analysis,
-    sources,
+    if (!response.ok) {
+      throw new Error(
+        data.detail ||
+          'Verification request failed.'
+      );
+    }
+
+    const sources = Array.isArray(data.sources)
+      ? data.sources
+          .filter(
+            (source: any) =>
+              source.url &&
+              source.title
+          )
+          .slice(0, 4)
+          .map((source: any) => ({
+            name: getSourceName(source.url),
+            title: source.title,
+            type: 'Web source',
+            description:
+              source.content ||
+              'Evidence retrieved during verification.',
+            url: source.url,
+          }))
+      : [];
+
+    const verificationResult: VerificationResult = {
+      score: data.verification.score,
+      verdict: data.verification.verdict,
+      input: data.input,
+      analysis: data.verification.analysis,
+      sources,
+    };
+
+    handleResult(verificationResult);
   };
 
-  handleResult(verificationResult);
-};
-
-const handleCheckLink = async (url: string) => {
-  if (!user) {
-    navigate('/signin');
-    return;
-  }
-
-  const response = await fetch(
-    'http://127.0.0.1:8000/check-link',
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        url: url.trim(),
-      }),
+  const handleCheckLink = async (
+    url: string
+  ) => {
+    if (!user) {
+      navigate('/signin');
+      return;
     }
-  );
 
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(
-      data.detail || 'Link check failed.'
+    const response = await fetch(
+      'http://127.0.0.1:8000/check-link',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          url: url.trim(),
+        }),
+      }
     );
-  }
 
-  setLinkCheckResult(data);
-  navigate('/link-check');
-};
+    const data = await response.json();
 
+    if (!response.ok) {
+      throw new Error(
+        data.detail ||
+          'Link check failed.'
+      );
+    }
+
+    setLinkCheckResult(data);
+    navigate('/link-check');
+  };
 
   const handleNavigate = (page: string) => {
     navigate(page);
@@ -329,33 +348,31 @@ const handleCheckLink = async (url: string) => {
   return (
     <div className="min-h-screen bg-[#f4f0e8] text-[#171717]">
       <Navbar
-        page={location.pathname.replace('/', '') || 'home'}
+        page={
+          location.pathname.replace('/', '') ||
+          'home'
+        }
         onNavigate={handleNavigate}
         isLoggedIn={!!user}
         onSignOut={handleSignOut}
       />
 
       <Routes>
+        {/* HOME */}
         <Route
           path="/"
           element={
             <HomePage
               onVerify={handleHomeVerify}
               onCheckLink={handleCheckLink}
-              onExplore={() => navigate('/explore')}
+              onExplore={() =>
+                navigate('/explore')
+              }
             />
           }
         />
 
-        <Route
-          path="/verify"
-          element={
-            <ProtectedRoute user={user}>
-              <VerifyPage onResult={handleResult} />
-            </ProtectedRoute>
-          }
-        />
-
+        {/* LIVE VERIFICATION RESULT */}
         <Route
           path="/result"
           element={
@@ -363,51 +380,69 @@ const handleCheckLink = async (url: string) => {
               {result ? (
                 <ResultPage
                   result={result}
-                  onAnother={() => navigate('/verify')}
+                  onAnother={() =>
+                    navigate('/')
+                  }
                 />
               ) : (
-                <Navigate to="/verify" replace />
+                <Navigate
+                  to="/"
+                  replace
+                />
               )}
             </ProtectedRoute>
           }
         />
 
-
-<Route
-  path="/result/:reportId"
-  element={
-    <ProtectedRoute user={user}>
-      <SavedReportPage
-        onAnother={() => navigate('/verify')}
-      />
-    </ProtectedRoute>
-  }
-/>
-<Route
-  path="/link-check"
-  element={
-    <ProtectedRoute user={user}>
-      {linkCheckResult ? (
-        <LinkCheckPage
-          result={linkCheckResult}
-          onAnother={() => navigate('/')}
+        {/* SAVED REPORT */}
+        <Route
+          path="/result/:reportId"
+          element={
+            <ProtectedRoute user={user}>
+              <SavedReportPage
+                onAnother={() =>
+                  navigate('/')
+                }
+              />
+            </ProtectedRoute>
+          }
         />
-      ) : (
-        <Navigate to="/" replace />
-      )}
-    </ProtectedRoute>
-  }
-/>
+
+        {/* LINK CHECKER */}
+        <Route
+          path="/link-check"
+          element={
+            <ProtectedRoute user={user}>
+              {linkCheckResult ? (
+                <LinkCheckPage
+                  result={linkCheckResult}
+                  onAnother={() =>
+                    navigate('/')
+                  }
+                />
+              ) : (
+                <Navigate
+                  to="/"
+                  replace
+                />
+              )}
+            </ProtectedRoute>
+          }
+        />
+
+        {/* EXPLORE */}
         <Route
           path="/explore"
           element={<ExplorePage />}
         />
 
+        {/* ABOUT */}
         <Route
           path="/about"
           element={<AboutPage />}
         />
 
+        {/* SIGN IN */}
         <Route
           path="/signin"
           element={
@@ -417,6 +452,7 @@ const handleCheckLink = async (url: string) => {
           }
         />
 
+        {/* SIGN UP */}
         <Route
           path="/signup"
           element={
@@ -426,6 +462,7 @@ const handleCheckLink = async (url: string) => {
           }
         />
 
+        {/* DASHBOARD */}
         <Route
           path="/dashboard"
           element={
@@ -438,9 +475,15 @@ const handleCheckLink = async (url: string) => {
           }
         />
 
+        {/* FALLBACK */}
         <Route
           path="*"
-          element={<Navigate to="/" replace />}
+          element={
+            <Navigate
+              to="/"
+              replace
+            />
+          }
         />
       </Routes>
 

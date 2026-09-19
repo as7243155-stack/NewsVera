@@ -34,11 +34,10 @@ export default function Navbar({
   const [open, setOpen] = useState(false);
 
   const links: { label: string; page: Page }[] = [
-    { label: 'Home', page: 'home' },
-    { label: 'Verify', page: 'verify' },
-    { label: 'Explore', page: 'explore' },
-    { label: 'About', page: 'about' },
-  ];
+  { label: 'Home', page: 'home' },
+  { label: 'Explore', page: 'explore' },
+  { label: 'About', page: 'about' },
+];
 
   const go = (next: Page) => {
     setOpen(false);

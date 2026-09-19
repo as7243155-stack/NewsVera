@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import {
   ArrowRight,
@@ -8,7 +8,11 @@ import {
   Image as ImageIcon,
   Search,
   ShieldCheck,
+  Upload,
+  X,
 } from 'lucide-react';
+
+import { createWorker } from 'tesseract.js';
 
 import homepageImage from '../../assets/homepage.jpeg';
 
@@ -28,11 +32,31 @@ export default function Hero({
   onCheckLink,
   onExplore,
 }: HeroProps) {
-  const [mode, setMode] = useState<InputMode>('text');
+  const [mode, setMode] =
+    useState<InputMode>('text');
+
   const [value, setValue] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [linkLoading, setLinkLoading] = useState(false);
-  const [error, setError] = useState('');
+
+  const [loading, setLoading] =
+    useState(false);
+
+  const [linkLoading, setLinkLoading] =
+    useState(false);
+
+  const [ocrLoading, setOcrLoading] =
+    useState(false);
+
+  const [ocrProgress, setOcrProgress] =
+    useState(0);
+
+  const [preview, setPreview] =
+    useState<string | null>(null);
+
+  const [error, setError] =
+    useState('');
+
+  const fileInputRef =
+    useRef<HTMLInputElement>(null);
 
   const modePlaceholder = {
     text: 'Paste a news claim here...',
@@ -40,20 +64,179 @@ export default function Hero({
     image: 'Upload a screenshot of a news story...',
   };
 
-  const switchMode = (nextMode: InputMode) => {
+  const switchMode = (
+    nextMode: InputMode
+  ) => {
     setMode(nextMode);
     setValue('');
     setError('');
+    setPreview(null);
+    setOcrProgress(0);
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const extractTextFromImage = async (
+    file: File
+  ) => {
+    if (!file.type.startsWith('image/')) {
+      setError(
+        'Please upload a valid image file.'
+      );
+      return;
+    }
+
+    const allowedTypes = [
+      'image/png',
+      'image/jpeg',
+      'image/webp',
+      'image/gif',
+    ];
+
+    if (!allowedTypes.includes(file.type)) {
+      setError(
+        'Please upload a PNG, JPEG, WEBP, or GIF image.'
+      );
+      return;
+    }
+
+    const maxSize =
+      10 * 1024 * 1024;
+
+    if (file.size > maxSize) {
+      setError(
+        'Image size must be 10 MB or smaller.'
+      );
+      return;
+    }
+
+    setError('');
+    setOcrLoading(true);
+    setOcrProgress(0);
+    setValue('');
+
+    const imageUrl =
+      URL.createObjectURL(file);
+
+    setPreview(imageUrl);
+
+    let worker:
+      | Awaited<ReturnType<typeof createWorker>>
+      | null = null;
+
+    try {
+      worker = await createWorker(
+        'eng',
+        1,
+        {
+          logger: (message) => {
+            if (
+              message.status ===
+                'recognizing text' &&
+              typeof message.progress ===
+                'number'
+            ) {
+              setOcrProgress(
+                Math.round(
+                  message.progress * 100
+                )
+              );
+            }
+          },
+        }
+      );
+
+      const result =
+        await worker.recognize(
+          imageUrl
+        );
+
+      const extractedText =
+        result.data.text.trim();
+
+      const wordCount =
+        extractedText
+          ? extractedText.split(/\s+/).length
+          : 0;
+
+      if (wordCount < 5) {
+        setValue(extractedText);
+
+        setError(
+          'We could not extract enough readable text from this image. Please upload a clearer screenshot containing at least 5 words.'
+        );
+
+        return;
+      }
+
+      setValue(extractedText);
+      setOcrProgress(100);
+    } catch (err) {
+      console.error(
+        'OCR failed:',
+        err
+      );
+
+      setError(
+        'We could not read the text from this image. Please try a clearer screenshot.'
+      );
+    } finally {
+      if (worker) {
+        await worker.terminate();
+      }
+
+      setOcrLoading(false);
+    }
+  };
+
+  const handleFileChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file =
+      event.target.files?.[0];
+
+    if (file) {
+      void extractTextFromImage(file);
+    }
+  };
+
+  const handleImageDrop = (
+    event: React.DragEvent<HTMLDivElement>
+  ) => {
+    event.preventDefault();
+
+    const file =
+      event.dataTransfer.files?.[0];
+
+    if (file) {
+      void extractTextFromImage(file);
+    }
   };
 
   const handleVerify = async () => {
-    const trimmedValue = value.trim();
+    const trimmedValue =
+      value.trim();
 
     if (mode === 'image') {
-      setError(
-        'Image verification is coming next. Please use Text or URL for now.'
-      );
-      return;
+      const words = trimmedValue
+        ? trimmedValue.split(/\s+/).length
+        : 0;
+
+      if (ocrLoading) {
+        setError(
+          'Please wait for the image text extraction to finish.'
+        );
+        return;
+      }
+
+      if (words < 5) {
+        setError(
+          'We need at least 5 readable words from the image before we can verify it.'
+        );
+        return;
+      }
     }
 
     if (mode === 'text') {
@@ -83,7 +266,9 @@ export default function Hero({
     }
 
     if (!trimmedValue) {
-      setError('Please enter something to verify.');
+      setError(
+        'Please enter something to verify.'
+      );
       return;
     }
 
@@ -93,7 +278,7 @@ export default function Hero({
     try {
       await onVerify(
         trimmedValue,
-        mode === 'url' ? 'url' : 'text'
+        'text'
       );
     } catch (err) {
       setError(
@@ -107,10 +292,13 @@ export default function Hero({
   };
 
   const handleCheckLink = async () => {
-    const trimmedValue = value.trim();
+    const trimmedValue =
+      value.trim();
 
     if (!trimmedValue) {
-      setError('Please paste a website link first.');
+      setError(
+        'Please paste a website link first.'
+      );
       return;
     }
 
@@ -129,7 +317,9 @@ export default function Hero({
     setLinkLoading(true);
 
     try {
-      await onCheckLink(trimmedValue);
+      await onCheckLink(
+        trimmedValue
+      );
     } catch (err) {
       setError(
         err instanceof Error
@@ -138,6 +328,17 @@ export default function Hero({
       );
     } finally {
       setLinkLoading(false);
+    }
+  };
+
+  const removeImage = () => {
+    setPreview(null);
+    setValue('');
+    setError('');
+    setOcrProgress(0);
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
@@ -182,9 +383,13 @@ export default function Hero({
 
             <button
               className={
-                mode === 'text' ? 'active' : ''
+                mode === 'text'
+                  ? 'active'
+                  : ''
               }
-              onClick={() => switchMode('text')}
+              onClick={() =>
+                switchMode('text')
+              }
               type="button"
             >
               <FileText size={17} />
@@ -193,9 +398,13 @@ export default function Hero({
 
             <button
               className={
-                mode === 'url' ? 'active' : ''
+                mode === 'url'
+                  ? 'active'
+                  : ''
               }
-              onClick={() => switchMode('url')}
+              onClick={() =>
+                switchMode('url')
+              }
               type="button"
             >
               <Globe2 size={17} />
@@ -204,9 +413,13 @@ export default function Hero({
 
             <button
               className={
-                mode === 'image' ? 'active' : ''
+                mode === 'image'
+                  ? 'active'
+                  : ''
               }
-              onClick={() => switchMode('image')}
+              onClick={() =>
+                switchMode('image')
+              }
               type="button"
             >
               <ImageIcon size={17} />
@@ -215,23 +428,139 @@ export default function Hero({
 
           </div>
 
-          <div className="hero-input-wrap">
+          {mode === 'image' ? (
+            <div className="hero-image-input">
 
-            <textarea
-              value={value}
-              onChange={(event) => {
-                setValue(event.target.value);
-                setError('');
-              }}
-              placeholder={modePlaceholder[mode]}
-              maxLength={2000}
-            />
+              {!preview ? (
+                <div
+                  className="hero-upload-zone"
+                  onDragOver={(event) =>
+                    event.preventDefault()
+                  }
+                  onDrop={
+                    handleImageDrop
+                  }
+                  onClick={() =>
+                    fileInputRef.current?.click()
+                  }
+                >
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,image/gif"
+                    onChange={
+                      handleFileChange
+                    }
+                    hidden
+                  />
 
-            <span>
-              {value.length}/2000
-            </span>
+                  <div className="hero-upload-icon">
+                    <Upload size={23} />
+                  </div>
 
-          </div>
+                  <strong>
+                    Upload a news screenshot
+                  </strong>
+
+                  <span>
+                    Drag & drop an image here
+                    or click to browse
+                  </span>
+
+                  <small>
+                    PNG, JPEG, WEBP or GIF ·
+                    Max 10 MB
+                  </small>
+                </div>
+              ) : (
+                <div className="hero-image-preview">
+
+                  <img
+                    src={preview}
+                    alt="Uploaded news screenshot"
+                  />
+
+                  <button
+                    type="button"
+                    className="hero-remove-image"
+                    onClick={
+                      removeImage
+                    }
+                    aria-label="Remove image"
+                  >
+                    <X size={17} />
+                  </button>
+
+                </div>
+              )}
+
+              {ocrLoading && (
+                <div className="hero-ocr-status">
+                  <div>
+                    <span>
+                      Reading screenshot...
+                    </span>
+
+                    <strong>
+                      {ocrProgress}%
+                    </strong>
+                  </div>
+
+                  <div className="hero-ocr-bar">
+                    <span
+                      style={{
+                        width: `${ocrProgress}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {value && !ocrLoading && (
+                <div className="hero-ocr-text">
+                  <div className="hero-ocr-heading">
+                    <span>
+                      EXTRACTED TEXT
+                    </span>
+
+                    <strong>
+                      {
+                        value.trim().split(/\s+/)
+                          .length
+                      } words
+                    </strong>
+                  </div>
+
+                  <p>
+                    {value}
+                  </p>
+                </div>
+              )}
+
+            </div>
+          ) : (
+            <div className="hero-input-wrap">
+
+              <textarea
+                value={value}
+                onChange={(event) => {
+                  setValue(
+                    event.target.value
+                  );
+                  setError('');
+                }}
+                placeholder={
+                  modePlaceholder[mode]
+                }
+                maxLength={2000}
+              />
+
+              <span>
+                {value.length}/2000
+              </span>
+
+            </div>
+          )}
 
           {error && (
             <p className="form-error">
@@ -243,20 +572,29 @@ export default function Hero({
           <button
             className="hero-analyze"
             disabled={
-              loading || linkLoading
+              loading ||
+              linkLoading ||
+              ocrLoading
             }
-            onClick={handleVerify}
+            onClick={
+              handleVerify
+            }
             type="button"
           >
             <Search size={21} />
 
             {loading
               ? 'Analyzing...'
-              : 'Analyze & Verify'}
+              : ocrLoading
+                ? 'Reading image...'
+                : 'Analyze & Verify'}
 
-            {!loading && (
-              <ArrowRight size={19} />
-            )}
+            {!loading &&
+              !ocrLoading && (
+                <ArrowRight
+                  size={19}
+                />
+              )}
           </button>
 
           <p className="hero-verification-note">
@@ -277,9 +615,13 @@ export default function Hero({
 
             <button
               type="button"
-              onClick={handleCheckLink}
+              onClick={
+                handleCheckLink
+              }
               disabled={
-                loading || linkLoading
+                loading ||
+                linkLoading ||
+                ocrLoading
               }
             >
               {linkLoading
@@ -287,7 +629,9 @@ export default function Hero({
                 : 'Check this link'}
 
               {!linkLoading && (
-                <ArrowRight size={14} />
+                <ArrowRight
+                  size={14}
+                />
               )}
             </button>
 
