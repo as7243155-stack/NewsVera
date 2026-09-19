@@ -3134,3 +3134,479 @@ input::placeholder {
     justify-content: center;
   }
 }
+/* =========================================================
+   NEWSVERA LOVABLE-STYLE HOMEPAGE HERO
+   ========================================================= */
+
+.newspaper-hero {
+  position: relative;
+  min-height: 760px;
+  height: 760px;
+  overflow: hidden;
+  background: #f4f0e8;
+}
+
+/* The Lovable newspaper collage becomes the background layer */
+.newspaper-hero .hero-collage {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+
+  width: 100%;
+  height: 100%;
+
+  display: block;
+  object-fit: cover;
+  object-position: center center;
+}
+
+/* Keep the verification paper above the collage */
+.newspaper-hero .hero-paper {
+  position: absolute;
+  z-index: 3;
+
+  top: 62px;
+  left: 50%;
+
+  width: min(500px, calc(100% - 40px));
+
+  transform: translateX(-50%);
+
+  margin: 0;
+
+  background: #f4f0e8;
+
+  box-shadow:
+    0 18px 35px rgba(0, 0, 0, 0.18),
+    0 4px 10px rgba(0, 0, 0, 0.08);
+
+  border: 1px solid rgba(23, 23, 23, 0.12);
+
+  padding: 34px 34px 30px;
+
+  clip-path: polygon(
+    1% 1%,
+    98% 0%,
+    100% 5%,
+    99% 96%,
+    97% 100%,
+    3% 99%,
+    0% 96%,
+    1% 4%
+  );
+}
+
+/* Verification desk label */
+.newspaper-hero .hero-brand-kicker {
+  margin-bottom: 8px;
+
+  color: var(--ink);
+  font-size: 10px;
+  font-weight: 800;
+
+  letter-spacing: 0.28em;
+  text-align: center;
+}
+
+/* Brand */
+.newspaper-hero .hero-brand {
+  text-align: center;
+}
+
+.newspaper-hero .hero-brand h1 {
+  margin: 0;
+
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(50px, 6vw, 66px);
+  line-height: 0.95;
+  letter-spacing: -0.055em;
+
+  color: #111;
+}
+
+.newspaper-hero .hero-brand h1 span {
+  color: var(--red);
+}
+
+.newspaper-hero .hero-brand p {
+  margin: 10px 0 18px;
+
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 17px;
+  font-style: italic;
+
+  color: #222;
+}
+
+/* Black headline strip */
+.newspaper-hero .hero-black-strip {
+  margin: 0 0 17px;
+
+  padding: 9px 12px;
+
+  background: #171717;
+  color: #fff;
+
+  text-align: center;
+
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+
+  transform: rotate(-0.4deg);
+}
+
+/* Verification area */
+.newspaper-hero .hero-verification {
+  position: relative;
+  z-index: 4;
+}
+
+/* Tabs */
+.newspaper-hero .hero-mode-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+
+  gap: 6px;
+
+  margin-bottom: 12px;
+}
+
+.newspaper-hero .hero-mode-tabs button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 7px;
+
+  min-height: 42px;
+
+  border: 1px solid rgba(23, 23, 23, 0.22);
+  border-radius: 6px;
+
+  background: #f8f5ee;
+  color: #171717;
+
+  font-size: 12px;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  transition:
+    background 0.18s ease,
+    color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.newspaper-hero .hero-mode-tabs button:hover {
+  transform: translateY(-1px);
+}
+
+.newspaper-hero .hero-mode-tabs button.active {
+  background: #171717;
+  color: #fff;
+
+  border-color: #171717;
+}
+
+/* Input */
+.newspaper-hero .hero-input-wrap {
+  position: relative;
+
+  margin-bottom: 12px;
+}
+
+.newspaper-hero .hero-input-wrap textarea {
+  display: block;
+
+  width: 100%;
+  min-height: 105px;
+
+  box-sizing: border-box;
+
+  padding: 17px 15px 28px;
+
+  resize: vertical;
+
+  border: 1px solid rgba(23, 23, 23, 0.24);
+  border-radius: 7px;
+
+  outline: none;
+
+  background: #faf8f2;
+  color: #171717;
+
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+
+  box-shadow:
+    inset 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.newspaper-hero .hero-input-wrap textarea:focus {
+  border-color: #171717;
+}
+
+.newspaper-hero .hero-input-wrap textarea::placeholder {
+  color: #8b8b8b;
+}
+
+.newspaper-hero .hero-input-wrap > span {
+  position: absolute;
+
+  right: 12px;
+  bottom: 8px;
+
+  color: #777;
+
+  font-size: 10px;
+}
+
+/* Error */
+.newspaper-hero .form-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+
+  margin: 8px 0;
+
+  color: var(--red);
+
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* Analyze button */
+.newspaper-hero .hero-analyze {
+  width: 100%;
+
+  min-height: 44px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 9px;
+
+  border: 0;
+  border-radius: 6px;
+
+  background: #171717;
+  color: #fff;
+
+  font-size: 13px;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.18s ease,
+    opacity 0.18s ease;
+}
+
+.newspaper-hero .hero-analyze:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.newspaper-hero .hero-analyze:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Verification note */
+.newspaper-hero .hero-verification-note {
+  margin: 11px 0 14px;
+
+  color: #666;
+
+  font-size: 10px;
+  line-height: 1.5;
+
+  text-align: center;
+}
+
+/* Link checker */
+.newspaper-hero .hero-link-check {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+
+  padding-top: 12px;
+
+  border-top: 1px solid rgba(23, 23, 23, 0.16);
+}
+
+.newspaper-hero .hero-link-check-copy {
+  display: flex;
+  align-items: center;
+
+  gap: 7px;
+
+  min-width: 0;
+
+  color: #333;
+
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.newspaper-hero .hero-link-check-copy svg {
+  flex: 0 0 auto;
+  color: var(--red);
+}
+
+.newspaper-hero .hero-link-check button {
+  display: inline-flex;
+  align-items: center;
+
+  gap: 5px;
+
+  flex: 0 0 auto;
+
+  padding: 7px 10px;
+
+  border: 0;
+
+  background: transparent;
+  color: var(--red);
+
+  font-size: 11px;
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+.newspaper-hero .hero-link-check button:hover {
+  text-decoration: underline;
+}
+
+.newspaper-hero .hero-link-check button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Remove the old manually drawn decorations */
+.newspaper-hero .newspaper-layer,
+.newspaper-hero .hero-red-mark {
+  display: none;
+}
+
+/* Remove the old arrow from the previous design */
+.newspaper-hero .hero-paper-arrow {
+  display: none;
+}
+
+/* Editorial "Read. Verify. Think." */
+.newspaper-hero .hero-explore-note {
+  position: absolute;
+
+  z-index: 4;
+
+  right: 5.5%;
+  bottom: 95px;
+
+  padding: 0;
+
+  border: 0;
+
+  background: transparent;
+
+  color: #171717;
+
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 22px;
+  line-height: 1.05;
+  font-style: italic;
+
+  text-align: left;
+
+  cursor: pointer;
+
+  transform: rotate(-2deg);
+}
+
+.newspaper-hero .hero-explore-note::after {
+  content: "";
+
+  display: block;
+
+  width: 75px;
+  height: 3px;
+
+  margin-top: 7px;
+
+  background: var(--red);
+
+  transform: rotate(-3deg);
+}
+
+/* Desktop sizing */
+@media (min-width: 1200px) {
+  .newspaper-hero .hero-paper {
+    top: 58px;
+    width: 500px;
+  }
+}
+
+/* Tablet */
+@media (max-width: 900px) {
+  .newspaper-hero {
+    min-height: 720px;
+    height: 720px;
+  }
+
+  .newspaper-hero .hero-paper {
+    top: 48px;
+    width: min(500px, calc(100% - 50px));
+  }
+
+  .newspaper-hero .hero-explore-note {
+    right: 3%;
+    bottom: 70px;
+    font-size: 18px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  .newspaper-hero {
+    min-height: 700px;
+    height: 700px;
+  }
+
+  .newspaper-hero .hero-collage {
+    object-position: center center;
+  }
+
+  .newspaper-hero .hero-paper {
+    top: 28px;
+
+    width: calc(100% - 28px);
+
+    padding: 28px 20px 24px;
+  }
+
+  .newspaper-hero .hero-brand h1 {
+    font-size: 48px;
+  }
+
+  .newspaper-hero .hero-brand p {
+    font-size: 14px;
+  }
+
+  .newspaper-hero .hero-link-check {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .newspaper-hero .hero-link-check button {
+    padding-left: 0;
+  }
+
+  .newspaper-hero .hero-explore-note {
+    display: none;
+  }
+}

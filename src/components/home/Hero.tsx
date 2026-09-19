@@ -10,10 +10,15 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 
+import homepageImage from '../../assets/homepage.jpeg';
+
 type InputMode = 'text' | 'url' | 'image';
 
 interface HeroProps {
-  onVerify: (content: string, mode: 'text' | 'url') => Promise<void>;
+  onVerify: (
+    content: string,
+    mode: 'text' | 'url'
+  ) => Promise<void>;
   onCheckLink: (url: string) => Promise<void>;
   onExplore: () => void;
 }
@@ -66,7 +71,9 @@ export default function Hero({
 
     if (mode === 'url') {
       if (
-        !/^https?:\/\/[^\s]+\.[^\s]+$/i.test(trimmedValue)
+        !/^https?:\/\/[^\s]+\.[^\s]+$/i.test(
+          trimmedValue
+        )
       ) {
         setError(
           'Please enter a valid-looking article URL, including http:// or https://.'
@@ -108,7 +115,9 @@ export default function Hero({
     }
 
     if (
-      !/^https?:\/\/[^\s]+$/i.test(trimmedValue)
+      !/^https?:\/\/[^\s]+$/i.test(
+        trimmedValue
+      )
     ) {
       setError(
         'Please enter a complete link starting with http:// or https://.'
@@ -135,82 +144,24 @@ export default function Hero({
   return (
     <section className="home-hero newspaper-hero">
 
-      {/* Background editorial elements */}
-      <div className="newspaper-layer newspaper-left">
-        <div className="paper-headline">
-          REAL
-          <br />
-          <strong>FACTS</strong>
-          <br />
-          REAL
-          <br />
-          <strong>IMPACT</strong>
-        </div>
+      {/* Lovable newspaper collage */}
+      <img
+        className="hero-collage"
+        src={homepageImage}
+        alt=""
+        aria-hidden="true"
+      />
 
-        <div className="paper-circle">
-          <span>In a world</span>
-          <span>of information</span>
-          <span>overload,</span>
-          <span>truth still</span>
-          <span>matters.</span>
-        </div>
-
-        <div className="paper-arrow">↘</div>
-
-        <div className="camera-illustration">
-          <div className="camera-top" />
-          <div className="camera-lens" />
-          <div className="camera-detail" />
-        </div>
-
-        <div className="tv-illustration">
-          <span>REAL?</span>
-          <span>FAKE?</span>
-          <strong>YOU DECIDE.</strong>
-        </div>
-      </div>
-
-      <div className="newspaper-layer newspaper-right">
-        <div className="headline-note">
-          Same story.
-          <br />
-          Different headlines.
-          <br />
-          <strong>Different truth?</strong>
-        </div>
-
-        <div className="microphone-illustration">
-          <div className="mic-body" />
-          <div className="mic-head" />
-        </div>
-
-        <div className="question-stack">
-          <span>Question</span>
-          <span>Read</span>
-          <strong>Verify</strong>
-        </div>
-
-        <div className="facts-note">
-          <strong>FACTS</strong>
-          <br />
-          OVER
-          <br />
-          RUMORS
-        </div>
-
-        <div className="truth-note">
-          The truth
-          <br />
-          is a click away.
-        </div>
-      </div>
-
-      {/* Main newspaper sheet */}
+      {/* Main verification sheet */}
       <div className="hero-paper">
 
         <div className="hero-tape hero-tape-top" />
 
         <div className="hero-brand">
+          <div className="hero-brand-kicker">
+            THE VERIFICATION DESK
+          </div>
+
           <h1>
             News<span>Vera</span>
           </h1>
@@ -228,8 +179,11 @@ export default function Hero({
         <div className="hero-verification">
 
           <div className="hero-mode-tabs">
+
             <button
-              className={mode === 'text' ? 'active' : ''}
+              className={
+                mode === 'text' ? 'active' : ''
+              }
               onClick={() => switchMode('text')}
               type="button"
             >
@@ -238,7 +192,9 @@ export default function Hero({
             </button>
 
             <button
-              className={mode === 'url' ? 'active' : ''}
+              className={
+                mode === 'url' ? 'active' : ''
+              }
               onClick={() => switchMode('url')}
               type="button"
             >
@@ -247,16 +203,20 @@ export default function Hero({
             </button>
 
             <button
-              className={mode === 'image' ? 'active' : ''}
+              className={
+                mode === 'image' ? 'active' : ''
+              }
               onClick={() => switchMode('image')}
               type="button"
             >
               <ImageIcon size={17} />
               Image
             </button>
+
           </div>
 
           <div className="hero-input-wrap">
+
             <textarea
               value={value}
               onChange={(event) => {
@@ -267,7 +227,10 @@ export default function Hero({
               maxLength={2000}
             />
 
-            <span>{value.length}/2000</span>
+            <span>
+              {value.length}/2000
+            </span>
+
           </div>
 
           {error && (
@@ -279,7 +242,9 @@ export default function Hero({
 
           <button
             className="hero-analyze"
-            disabled={loading || linkLoading}
+            disabled={
+              loading || linkLoading
+            }
             onClick={handleVerify}
             type="button"
           >
@@ -289,15 +254,19 @@ export default function Hero({
               ? 'Analyzing...'
               : 'Analyze & Verify'}
 
-            {!loading && <ArrowRight size={19} />}
+            {!loading && (
+              <ArrowRight size={19} />
+            )}
           </button>
 
           <p className="hero-verification-note">
-            Get a truth score, detailed analysis, and trusted sources in seconds.
+            Get a truth score, detailed analysis,
+            and trusted sources in seconds.
           </p>
 
           {/* Link safety shortcut */}
           <div className="hero-link-check">
+
             <div className="hero-link-check-copy">
               <ShieldCheck size={17} />
 
@@ -309,28 +278,26 @@ export default function Hero({
             <button
               type="button"
               onClick={handleCheckLink}
-              disabled={loading || linkLoading}
+              disabled={
+                loading || linkLoading
+              }
             >
               {linkLoading
                 ? 'Checking...'
                 : 'Check this link'}
-              {!linkLoading && <ArrowRight size={14} />}
+
+              {!linkLoading && (
+                <ArrowRight size={14} />
+              )}
             </button>
+
           </div>
 
         </div>
 
-        <div className="hero-paper-arrow">
-          ↘
-        </div>
-
       </div>
 
-      {/* Right-side handwritten decoration */}
-      <div className="hero-red-mark">
-        ↘
-      </div>
-
+      {/* Editorial callout */}
       <button
         className="hero-explore-note"
         onClick={onExplore}
