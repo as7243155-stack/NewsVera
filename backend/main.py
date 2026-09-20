@@ -5,7 +5,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from services.extractor import ExtractionError, extract_url_text
-from services.search import SearchError, search_web
+from services.search import (
+    SearchError,
+    get_news_feed,
+    search_web,
+)
 from services.verifier import VerificationError, verify_claim
 from services.link_checker import LinkCheckError, check_link
 
@@ -93,6 +97,15 @@ def root():
         "status": "ok",
     }
 
+@app.get("/news")
+def news():
+    try:
+        return get_news_feed()
+    except SearchError as exc:
+        raise HTTPException(
+            status_code=502,
+            detail=str(exc),
+        ) from exc
 
 @app.get("/health")
 def health():

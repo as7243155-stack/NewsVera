@@ -2876,3 +2876,26 @@ input::placeholder {
 .home-analysis-state .loading-panel {
   width: min(620px, 100%);
 }
+.today-heading-actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.live-news-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--navy);
+}
+
+.live-news-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--red);
+  display: inline-block;
+}
