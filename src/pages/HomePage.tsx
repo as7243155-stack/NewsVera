@@ -152,12 +152,13 @@ export default function HomePage({
   return (
     <main>
 
-      {isAnalyzing ? (
+      {isAnalyzing && (
         <section className="home-analysis-state">
           <LoadingAnalysis />
         </section>
-      ) : (
-        <>
+      )}
+
+      <div style={{ display: isAnalyzing ? 'none' : 'contents' }}>
 
           <Hero
             onVerify={
@@ -272,8 +273,7 @@ export default function HomePage({
             }
           />
 
-        </>
-      )}
+      </div>
 
     </main>
   );

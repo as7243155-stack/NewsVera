@@ -278,7 +278,7 @@ export default function Hero({
     try {
       await onVerify(
         trimmedValue,
-        'text'
+        mode === 'url' ? 'url' : 'text'
       );
     } catch (err) {
       setError(
