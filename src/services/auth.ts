@@ -21,10 +21,12 @@ export async function signIn(
 }
 
 export async function signInWithGoogle() {
+  sessionStorage.setItem('newsvera_google_login', '1');
+
   return supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${window.location.origin}/dashboard`,
+      redirectTo: `${window.location.origin}/`,
     },
   });
 }

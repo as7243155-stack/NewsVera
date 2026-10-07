@@ -211,20 +211,29 @@ function AppContent() {
     useState<any>(null);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      setUser(data.user);
-    });
+  supabase.auth.getUser().then(({ data }) => {
+    setUser(data.user);
+  });
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setUser(session?.user ?? null);
+  const {
+    data: { subscription },
+  } = supabase.auth.onAuthStateChange(
+    (event, session) => {
+      setUser(session?.user ?? null);
+
+      if (
+        event === 'SIGNED_IN' &&
+        session?.user &&
+        sessionStorage.getItem('newsvera_google_login') === '1'
+      ) {
+        sessionStorage.removeItem('newsvera_google_login');
+        navigate('/dashboard');
       }
-    );
+    }
+  );
 
-    return () => subscription.unsubscribe();
-  }, []);
+  return () => subscription.unsubscribe();
+}, [navigate]);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
