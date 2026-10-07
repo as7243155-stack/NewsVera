@@ -21,7 +21,7 @@ interface HomePageProps {
   onExplore: () => void;
 }
 
-const API_BASE_URL = 'http://127.0.0.1:8000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function HomePage({
   onVerify,
@@ -49,7 +49,7 @@ export default function HomePage({
         setIsNewsLoading(true);
 
         const response = await fetch(
-          `${API_BASE_URL}/news`
+          `${API_BASE_URL}/api/news`
         );
 
         if (!response.ok) {

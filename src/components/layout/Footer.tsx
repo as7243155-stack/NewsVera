@@ -44,11 +44,7 @@ export default function Footer({
         </button>
       </div>
 
-      <div className="socials">
-        <Instagram size={17} />
-        <Linkedin size={17} />
-        <Youtube size={18} />
-      </div>
+    
     </footer>
   );
 }

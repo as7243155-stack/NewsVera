@@ -19,6 +19,7 @@ class VerificationError(Exception):
 
 def _build_evidence(results: list[dict]) -> str:
     """Convert Tavily results into compact evidence for Gemini."""
+    """tavily results are in huge paragraphs thats exceeds the max limit of gimini so we need to break the complete extract into smaller chunks so that it is easier for gemini"""
 
     evidence_parts = []
 

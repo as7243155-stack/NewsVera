@@ -19,6 +19,12 @@ app = FastAPI(
     description="AI-powered news verification backend",
     version="1.0.0",
 )
+@app.middleware("http")
+async def strip_api_prefix(request, call_next):
+    if request.scope["path"].startswith("/api/"):
+        request.scope["path"] = request.scope["path"][4:]
+
+    return await call_next(request)
 
 
 app.add_middleware(

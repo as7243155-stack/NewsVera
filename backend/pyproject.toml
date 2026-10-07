@@ -1,0 +1,12 @@
+[project]
+name = "newsvera-backend"
+version = "1.0.0"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "requests",
+    "beautifulsoup4",
+    "python-dotenv",
+    "google-genai"
+]

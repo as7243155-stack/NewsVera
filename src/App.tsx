@@ -255,7 +255,7 @@ function AppContent() {
     }
 
     const response = await fetch(
-      'http://127.0.0.1:8000/verify',
+      `${import.meta.env.VITE_API_BASE_URL}/api/verify`,
       {
         method: 'POST',
         headers: {
@@ -316,7 +316,7 @@ function AppContent() {
     }
 
     const response = await fetch(
-      'http://127.0.0.1:8000/check-link',
+      `${import.meta.env.VITE_API_BASE_URL}/api/check-link`,
       {
         method: 'POST',
         headers: {

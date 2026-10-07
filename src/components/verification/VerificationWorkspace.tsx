@@ -131,7 +131,7 @@ export default function VerificationWorkspace({
 
   try {
     const response = await fetch(
-      'http://127.0.0.1:8000/verify',
+      `${import.meta.env.VITE_API_BASE_URL}/api/verify`,
       {
         method: 'POST',
         headers: {
