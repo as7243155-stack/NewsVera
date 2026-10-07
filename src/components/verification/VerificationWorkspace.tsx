@@ -15,24 +15,48 @@ import {
 
 import LoadingAnalysis from './LoadingAnalysis';
 
-type InputMode = 'text' | 'url' | 'image';
+type InputMode =
+  | 'text'
+  | 'url'
+  | 'image';
 
-function getSourceName(url: string): string {
+function getSourceName(
+  url: string
+): string {
   try {
-    const hostname = new URL(url).hostname
-      .replace(/^www\./, '');
+    const hostname =
+      new URL(url)
+        .hostname
+        .replace(
+          /^www\./,
+          ''
+        );
 
-    const knownSources: Record<string, string> = {
-      'reuters.com': 'Reuters',
-      'apnews.com': 'AP',
-      'bbc.com': 'BBC',
-      'afp.com': 'AFP',
-      'nasa.gov': 'NASA',
-      'who.int': 'WHO',
-      'un.org': 'United Nations',
+    const knownSources: Record<
+      string,
+      string
+    > = {
+      'reuters.com':
+        'Reuters',
+      'apnews.com':
+        'AP',
+      'bbc.com':
+        'BBC',
+      'afp.com':
+        'AFP',
+      'nasa.gov':
+        'NASA',
+      'who.int':
+        'WHO',
+      'un.org':
+        'United Nations',
     };
 
-    return knownSources[hostname] || hostname;
+    return (
+      knownSources[
+        hostname
+      ] || hostname
+    );
   } catch {
     return 'Web Source';
   }
@@ -40,9 +64,13 @@ function getSourceName(url: string): string {
 
 export interface VerificationResult {
   score: number;
+
   verdict: string;
+
   input: string;
+
   analysis: string[];
+
   sources: {
     name: string;
     title: string;
@@ -53,7 +81,9 @@ export interface VerificationResult {
 }
 
 interface VerificationWorkspaceProps {
-  onResult: (result: VerificationResult) => void;
+  onResult: (
+    result: VerificationResult
+  ) => void;
 }
 
 const inputModes: InputMode[] = [
@@ -62,13 +92,17 @@ const inputModes: InputMode[] = [
   'image',
 ];
 
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL;
+
 export default function VerificationWorkspace({
   onResult,
 }: VerificationWorkspaceProps) {
   const [mode, setMode] =
     useState<InputMode>('text');
 
-  const [value, setValue] = useState('');
+  const [value, setValue] =
+    useState('');
 
   const [file, setFile] =
     useState<File | null>(null);
@@ -80,184 +114,286 @@ export default function VerificationWorkspace({
     useState(false);
 
   const fileInput =
-    useRef<HTMLInputElement>(null);
-
-  const wordCount = value.trim()
-    ? value.trim().split(/\s+/).length
-    : 0;
-
-  const submit = async () => {
-  setError('');
-
-  if (
-    mode === 'text' &&
-    wordCount < 10
-  ) {
-    setError(
-      'Please enter at least 10 words so we can examine the claim.'
-    );
-    return;
-  }
-
-  if (
-    mode === 'url' &&
-    !/^https?:\/\/[^\s]+\.[^\s]+$/i.test(value)
-  ) {
-    setError(
-      'Please enter a valid-looking article URL, including https://.'
-    );
-    return;
-  }
-
-  if (
-    mode === 'image' &&
-    !file
-  ) {
-    setError(
-      'Please upload an image or screenshot to continue.'
-    );
-    return;
-  }
-
-  // Image OCR will be connected in the next step.
-  if (mode === 'image') {
-    setError(
-      'Image verification is coming next. Please use text or URL for now.'
-    );
-    return;
-  }
-
-  setLoading(true);
-
-  try {
-    const response = await fetch(
-      `${import.meta.env.VITE_API_BASE_URL}/api/verify`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          mode,
-          content: value.trim(),
-        }),
-      }
+    useRef<HTMLInputElement>(
+      null
     );
 
-    const data = await response.json();
+  const wordCount =
+    value.trim()
+      ? value
+          .trim()
+          .split(/\s+/)
+          .length
+      : 0;
 
-    if (!response.ok) {
-      throw new Error(
-        data.detail || 'Verification request failed.'
-      );
-    }
-
-    const sources = Array.isArray(data.sources)
-      ? data.sources
-          .filter(
-            (source: any) =>
-              source.url &&
-              source.title
-          )
-          .slice(0, 4)
-          .map((source: any) => ({
-            name: getSourceName(source.url),
-            title: source.title,
-            type: 'Web source',
-            description:
-              source.content ||
-              'Evidence retrieved during verification.',
-            url: source.url,
-          }))
-      : [];
-
-    onResult({
-      score: data.verification.score,
-      verdict: data.verification.verdict,
-      input: data.input,
-      analysis: data.verification.analysis,
-      sources,
-    });
-  } catch (err) {
-    setError(
-      err instanceof Error
-        ? err.message
-        : 'Something went wrong while verifying the claim.'
-    );
-  } finally {
-    setLoading(false);
-  }
-};
-
-  const chooseFile = (
-    selected: File | undefined
-  ) => {
-    if (
-      selected?.type.startsWith('image/')
-    ) {
-      setFile(selected);
+  const submit =
+    async () => {
       setError('');
-      return;
-    }
 
-    if (selected) {
-      setError(
-        'Please choose a JPG, PNG, WEBP, or GIF image.'
-      );
-    }
-  };
+      if (
+        mode === 'text' &&
+        wordCount < 10
+      ) {
+        setError(
+          'Please enter at least 10 words so we can examine the claim.'
+        );
+
+        return;
+      }
+
+      if (
+        mode === 'url' &&
+        !/^https?:\/\/[^\s]+\.[^\s]+$/i.test(
+          value
+        )
+      ) {
+        setError(
+          'Please enter a valid-looking article URL, including https://.'
+        );
+
+        return;
+      }
+
+      if (
+        mode === 'image' &&
+        !file
+      ) {
+        setError(
+          'Please upload an image or screenshot to continue.'
+        );
+
+        return;
+      }
+
+      if (
+        mode === 'image'
+      ) {
+        setError(
+          'Image verification is coming next. Please use text or URL for now.'
+        );
+
+        return;
+      }
+
+      setLoading(true);
+
+      try {
+        const response =
+          await fetch(
+            `${API_BASE_URL}/verify`,
+            {
+              method: 'POST',
+
+              headers: {
+                'Content-Type':
+                  'application/json',
+              },
+
+              body: JSON.stringify({
+                mode,
+                content:
+                  value.trim(),
+              }),
+            }
+          );
+
+        let data: any;
+
+        try {
+          data =
+            await response.json();
+        } catch {
+          throw new Error(
+            `Verification server returned an invalid response (${response.status}).`
+          );
+        }
+
+        if (!response.ok) {
+          throw new Error(
+            data.detail ||
+              'Verification request failed.'
+          );
+        }
+
+        if (
+          !data.verification
+        ) {
+          throw new Error(
+            'The verification server did not return a valid analysis.'
+          );
+        }
+
+        const sources =
+          Array.isArray(
+            data.sources
+          )
+            ? data.sources
+                .filter(
+                  (source: any) =>
+                    source.url &&
+                    source.title
+                )
+                .slice(0, 4)
+                .map(
+                  (
+                    source: any
+                  ) => ({
+                    name:
+                      getSourceName(
+                        source.url
+                      ),
+
+                    title:
+                      source.title,
+
+                    type:
+                      'Web source',
+
+                    description:
+                      source.content ||
+                      'Evidence retrieved during verification.',
+
+                    url:
+                      source.url,
+                  })
+                )
+            : [];
+
+        onResult({
+          score:
+            data.verification
+              .score,
+
+          verdict:
+            data.verification
+              .verdict,
+
+          input:
+            data.input,
+
+          analysis:
+            data.verification
+              .analysis,
+
+          sources,
+        });
+
+      } catch (err) {
+        console.error(
+          'Verification request failed:',
+          err
+        );
+
+        setError(
+          err instanceof Error
+            ? err.message
+            : 'Something went wrong while verifying the claim.'
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+  const chooseFile =
+    (
+      selected:
+        | File
+        | undefined
+    ) => {
+      if (
+        selected?.type.startsWith(
+          'image/'
+        )
+      ) {
+        setFile(selected);
+        setError('');
+
+        return;
+      }
+
+      if (selected) {
+        setError(
+          'Please choose a JPG, PNG, WEBP, or GIF image.'
+        );
+      }
+    };
 
   if (loading) {
-    return <LoadingAnalysis />;
+    return (
+      <LoadingAnalysis />
+    );
   }
 
   return (
     <div className="verify-panel paper-panel">
+
       <div
         className="mode-tabs"
         role="tablist"
       >
-        {inputModes.map((item) => (
-          <button
-            key={item}
-            role="tab"
-            aria-selected={
-              mode === item
-            }
-            className={
-              mode === item
-                ? 'selected'
-                : ''
-            }
-            onClick={() => {
-              setMode(item);
-              setError('');
-            }}
-          >
-            {item === 'text' ? (
-              <FileText size={17} />
-            ) : item === 'url' ? (
-              <Globe2 size={17} />
-            ) : (
-              <ImageIcon size={17} />
-            )}
 
-            {item.toUpperCase()}
-          </button>
-        ))}
+        {inputModes.map(
+          (item) => (
+            <button
+              key={item}
+              role="tab"
+              aria-selected={
+                mode === item
+              }
+              className={
+                mode === item
+                  ? 'selected'
+                  : ''
+              }
+              onClick={() => {
+                setMode(item);
+                setError('');
+              }}
+            >
+
+              {item ===
+              'text' ? (
+                <FileText
+                  size={17}
+                />
+              ) : item ===
+                'url' ? (
+                <Globe2
+                  size={17}
+                />
+              ) : (
+                <ImageIcon
+                  size={17}
+                />
+              )}
+
+              {item.toUpperCase()}
+
+            </button>
+          )
+        )}
+
       </div>
 
-      {mode === 'text' && (
+      {mode ===
+        'text' && (
         <div className="field-wrap">
+
           <label htmlFor="claim">
-            Your claim or article text
+            Your claim or
+            article text
           </label>
 
           <textarea
             id="claim"
             value={value}
-            onChange={(event) =>
-              setValue(event.target.value)
+            onChange={(
+              event
+            ) =>
+              setValue(
+                event.target
+                  .value
+              )
             }
             placeholder="Paste a news claim or article text here..."
             maxLength={2000}
@@ -265,39 +401,57 @@ export default function VerificationWorkspace({
 
           <span className="field-meta">
             {wordCount} words ·{' '}
-            {value.length}/2000
+            {value.length}
+            /2000
           </span>
+
         </div>
       )}
 
-      {mode === 'url' && (
+      {mode ===
+        'url' && (
         <div className="field-wrap">
+
           <label htmlFor="url">
             Article URL
           </label>
 
           <div className="input-with-icon">
-            <Globe2 size={18} />
+
+            <Globe2
+              size={18}
+            />
 
             <input
               id="url"
               value={value}
-              onChange={(event) =>
-                setValue(event.target.value)
+              onChange={(
+                event
+              ) =>
+                setValue(
+                  event.target
+                    .value
+                )
               }
               placeholder="Paste a news article URL..."
             />
+
           </div>
 
           <span className="field-meta">
-            We only use this to understand the
-            story you want to examine.
+            We only use this
+            to understand the
+            story you want to
+            examine.
           </span>
+
         </div>
       )}
 
-      {mode === 'image' && (
+      {mode ===
+        'image' && (
         <div className="field-wrap">
+
           <label>
             Screenshot or image
           </label>
@@ -307,24 +461,37 @@ export default function VerificationWorkspace({
             onClick={() =>
               fileInput.current?.click()
             }
-            onDragOver={(event) =>
+            onDragOver={(
+              event
+            ) =>
               event.preventDefault()
             }
-            onDrop={(event) => {
+            onDrop={(
+              event
+            ) => {
               event.preventDefault();
 
               chooseFile(
-                event.dataTransfer.files[0]
+                event
+                  .dataTransfer
+                  .files[0]
               );
             }}
           >
+
             <input
-              ref={fileInput}
+              ref={
+                fileInput
+              }
               type="file"
               accept="image/png,image/jpeg,image/webp,image/gif"
-              onChange={(event) =>
+              onChange={(
+                event
+              ) =>
                 chooseFile(
-                  event.target.files?.[0]
+                  event
+                    .target
+                    .files?.[0]
                 )
               }
               hidden
@@ -332,40 +499,55 @@ export default function VerificationWorkspace({
 
             {file ? (
               <>
-                <CircleCheck size={30} />
+                <CircleCheck
+                  size={30}
+                />
 
                 <strong>
                   {file.name}
                 </strong>
 
                 <span>
-                  Ready to analyze · Click
-                  to replace
+                  Ready to analyze
+                  · Click to
+                  replace
                 </span>
               </>
             ) : (
               <>
-                <Upload size={29} />
+                <Upload
+                  size={29}
+                />
 
                 <strong>
-                  Drop a screenshot here or
-                  click to upload
+                  Drop a
+                  screenshot here
+                  or click to
+                  upload
                 </strong>
 
                 <span>
-                  JPG, PNG, WEBP, or GIF ·
-                  Max 10MB
+                  JPG, PNG, WEBP,
+                  or GIF · Max
+                  10MB
                 </span>
               </>
             )}
+
           </button>
+
         </div>
       )}
 
       {error && (
         <p className="form-error">
-          <CircleAlert size={16} />
+
+          <CircleAlert
+            size={16}
+          />
+
           {error}
+
         </p>
       )}
 
@@ -374,15 +556,22 @@ export default function VerificationWorkspace({
         onClick={submit}
       >
         Analyze & Verify
-        <ArrowRight size={18} />
+
+        <ArrowRight
+          size={18}
+        />
       </button>
 
       <p className="privacy-note">
-        NewsVera provides AI-assisted analysis
-        and source-based evidence. Always review
-        the cited sources before making important
-        decisions.
+        NewsVera provides
+        AI-assisted analysis
+        and source-based
+        evidence. Always
+        review the cited
+        sources before making
+        important decisions.
       </p>
+
     </div>
   );
 }

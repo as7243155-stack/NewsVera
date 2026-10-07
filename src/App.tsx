@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+
 import {
   BrowserRouter,
   Navigate,
@@ -8,9 +9,11 @@ import {
   useNavigate,
   useParams,
 } from 'react-router-dom';
+
 import { User } from '@supabase/supabase-js';
 
 import { supabase } from './lib/supabase';
+
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 
@@ -21,11 +24,15 @@ import AboutPage from './pages/AboutPage';
 import SignInPage from './pages/SignInPage';
 import SignUpPage from './pages/SignUpPage';
 import DashboardPage from './pages/DashboardPage';
-import { getReportById } from './services/reports';
-import SectionEyebrow from './components/layout/SectionEyebrow';
 import LinkCheckPage from './pages/LinkCheckPage';
 
-import { VerificationResult } from './components/verification/VerificationWorkspace';
+import { getReportById } from './services/reports';
+
+import SectionEyebrow from './components/layout/SectionEyebrow';
+
+import {
+  VerificationResult,
+} from './components/verification/VerificationWorkspace';
 
 function ProtectedRoute({
   user,
@@ -35,19 +42,29 @@ function ProtectedRoute({
   children: React.ReactNode;
 }) {
   if (!user) {
-    return <Navigate to="/signin" replace />;
+    return (
+      <Navigate
+        to="/signin"
+        replace
+      />
+    );
   }
 
   return <>{children}</>;
 }
 
-function getSourceName(url: string): string {
+function getSourceName(
+  url: string
+): string {
   try {
     const hostname = new URL(url)
       .hostname
       .replace(/^www\./, '');
 
-    const knownSources: Record<string, string> = {
+    const knownSources: Record<
+      string,
+      string
+    > = {
       'reuters.com': 'Reuters',
       'apnews.com': 'AP',
       'bbc.com': 'BBC',
@@ -57,7 +74,10 @@ function getSourceName(url: string): string {
       'un.org': 'United Nations',
     };
 
-    return knownSources[hostname] || hostname;
+    return (
+      knownSources[hostname] ||
+      hostname
+    );
   } catch {
     return 'Web Source';
   }
@@ -71,10 +91,15 @@ function SavedReportPage({
   const { reportId } = useParams();
 
   const [report, setReport] =
-    useState<VerificationResult | null>(null);
+    useState<VerificationResult | null>(
+      null
+    );
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [loading, setLoading] =
+    useState(true);
+
+  const [error, setError] =
+    useState('');
 
   useEffect(() => {
     async function loadReport() {
@@ -84,52 +109,69 @@ function SavedReportPage({
         return;
       }
 
-      const { data, error: reportError } =
-        await getReportById(reportId);
+      const {
+        data,
+        error: reportError,
+      } = await getReportById(reportId);
 
       if (reportError || !data) {
         setError(
           reportError?.message ||
             'Unable to load this report.'
         );
+
         setLoading(false);
         return;
       }
 
-      const analysis = Array.isArray(data.ai_comments)
-        ? data.ai_comments.filter(
-            (item): item is string =>
-              typeof item === 'string'
-          )
-        : [];
-
-      const sources = Array.isArray(data.source_links)
-        ? data.source_links
-            .filter(
-              (source: any) =>
-                source &&
-                source.title &&
-                source.url
+      const analysis =
+        Array.isArray(data.ai_comments)
+          ? data.ai_comments.filter(
+              (
+                item
+              ): item is string =>
+                typeof item ===
+                'string'
             )
-            .map((source: any) => ({
-              name:
-                source.name ||
-                getSourceName(source.url),
-              title: source.title,
-              type:
-                source.type ||
-                'Web source',
-              description:
-                source.description ||
-                'Evidence retrieved during verification.',
-              url: source.url,
-            }))
-        : [];
+          : [];
+
+      const sources =
+        Array.isArray(
+          data.source_links
+        )
+          ? data.source_links
+              .filter(
+                (source: any) =>
+                  source &&
+                  source.title &&
+                  source.url
+              )
+              .map(
+                (source: any) => ({
+                  name:
+                    source.name ||
+                    getSourceName(
+                      source.url
+                    ),
+                  title:
+                    source.title,
+                  type:
+                    source.type ||
+                    'Web source',
+                  description:
+                    source.description ||
+                    'Evidence retrieved during verification.',
+                  url: source.url,
+                })
+              )
+          : [];
 
       setReport({
         score: data.truth_score,
-        verdict: data.verdict_label,
-        input: data.claim_text,
+        verdict:
+          data.verdict_label,
+        input:
+          data.claim_text,
         analysis,
         sources,
       });
@@ -151,7 +193,9 @@ function SavedReportPage({
 
         <div className="report-row">
           <div className="report-claim">
-            <h3>Loading your report...</h3>
+            <h3>
+              Loading your report...
+            </h3>
           </div>
         </div>
       </main>
@@ -169,8 +213,14 @@ function SavedReportPage({
 
         <div className="report-row">
           <div className="report-claim">
-            <h3>Unable to load this report</h3>
-            <p>{error || 'Report not found.'}</p>
+            <h3>
+              Unable to load this report
+            </h3>
+
+            <p>
+              {error ||
+                'Report not found.'}
+            </p>
           </div>
         </div>
 
@@ -193,199 +243,293 @@ function SavedReportPage({
 }
 
 function AppContent() {
-  const navigate = useNavigate();
-  const location = useLocation();
+  const navigate =
+    useNavigate();
 
-  const currentPage =
-    location.pathname === '/'
-      ? 'home'
-      : location.pathname.split('/')[1] || 'home';
+  const location =
+    useLocation();
 
   const [user, setUser] =
     useState<User | null>(null);
 
   const [result, setResult] =
-    useState<VerificationResult | null>(null);
+    useState<VerificationResult | null>(
+      null
+    );
 
-  const [linkCheckResult, setLinkCheckResult] =
-    useState<any>(null);
+  const [
+    linkCheckResult,
+    setLinkCheckResult,
+  ] = useState<any>(null);
 
+  /*
+   * Authentication
+   */
   useEffect(() => {
-  supabase.auth.getUser().then(({ data }) => {
-    setUser(data.user);
-  });
+    supabase.auth
+      .getUser()
+      .then(({ data }) => {
+        setUser(data.user);
+      });
 
-  const {
-    data: { subscription },
-  } = supabase.auth.onAuthStateChange(
-    (event, session) => {
-      setUser(session?.user ?? null);
+    const {
+      data: {
+        subscription,
+      },
+    } =
+      supabase.auth.onAuthStateChange(
+        (event, session) => {
+          setUser(
+            session?.user ?? null
+          );
 
-      if (
-        event === 'SIGNED_IN' &&
-        session?.user &&
-        sessionStorage.getItem('newsvera_google_login') === '1'
-      ) {
-        sessionStorage.removeItem('newsvera_google_login');
-        navigate('/dashboard');
-      }
-    }
-  );
+          /*
+           * Google OAuth returns to "/"
+           * so Vercel can load the SPA.
+           *
+           * Once Supabase confirms the login,
+           * React sends the user to Dashboard.
+           */
+          if (
+            event === 'SIGNED_IN' &&
+            session?.user &&
+            sessionStorage.getItem(
+              'newsvera_google_login'
+            ) === '1'
+          ) {
+            sessionStorage.removeItem(
+              'newsvera_google_login'
+            );
 
-  return () => subscription.unsubscribe();
-}, [navigate]);
+            navigate('/dashboard');
+          }
+        }
+      );
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    navigate('/');
-  };
+    return () =>
+      subscription.unsubscribe();
+  }, [navigate]);
 
+  /*
+   * Sign out
+   */
+  const handleSignOut =
+    async () => {
+      await supabase.auth.signOut();
+
+      setUser(null);
+
+      navigate('/');
+    };
+
+  /*
+   * Verification result
+   */
   const handleResult = (
     verificationResult: VerificationResult
   ) => {
-    setResult(verificationResult);
+    setResult(
+      verificationResult
+    );
+
     navigate('/result');
   };
 
   /*
-   * Homepage verification.
-   *
-   * The homepage is now the main verification workspace.
-   * It sends text or URL input directly to the FastAPI
-   * verification API.
+   * Homepage verification
    */
-  const handleHomeVerify = async (
-    content: string,
-    mode: 'text' | 'url'
-  ) => {
-    if (!user) {
-      navigate('/signin');
-      return;
-    }
-
-    const response = await fetch(
-      `${import.meta.env.VITE_API_BASE_URL}/api/verify`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          mode,
-          content: content.trim(),
-        }),
+  const handleHomeVerify =
+    async (
+      content: string,
+      mode: 'text' | 'url'
+    ) => {
+      if (!user) {
+        navigate('/signin');
+        return;
       }
-    );
 
-    const data = await response.json();
+      const response =
+        await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/verify`,
+          {
+            method: 'POST',
 
-    if (!response.ok) {
-      throw new Error(
-        data.detail ||
-          'Verification request failed.'
+            headers: {
+              'Content-Type':
+                'application/json',
+            },
+
+            body: JSON.stringify({
+              mode,
+              content:
+                content.trim(),
+            }),
+          }
+        );
+
+      const data =
+        await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.detail ||
+            'Verification request failed.'
+        );
+      }
+
+      const sources =
+        Array.isArray(
+          data.sources
+        )
+          ? data.sources
+              .filter(
+                (source: any) =>
+                  source.url &&
+                  source.title
+              )
+              .slice(0, 4)
+              .map(
+                (source: any) => ({
+                  name:
+                    getSourceName(
+                      source.url
+                    ),
+                  title:
+                    source.title,
+                  type:
+                    'Web source',
+                  description:
+                    source.content ||
+                    'Evidence retrieved during verification.',
+                  url: source.url,
+                })
+              )
+          : [];
+
+      const verificationResult: VerificationResult =
+        {
+          score:
+            data.verification
+              .score,
+
+          verdict:
+            data.verification
+              .verdict,
+
+          input:
+            data.input,
+
+          analysis:
+            data.verification
+              .analysis,
+
+          sources,
+        };
+
+      handleResult(
+        verificationResult
       );
-    }
-
-    const sources = Array.isArray(data.sources)
-      ? data.sources
-          .filter(
-            (source: any) =>
-              source.url &&
-              source.title
-          )
-          .slice(0, 4)
-          .map((source: any) => ({
-            name: getSourceName(source.url),
-            title: source.title,
-            type: 'Web source',
-            description:
-              source.content ||
-              'Evidence retrieved during verification.',
-            url: source.url,
-          }))
-      : [];
-
-    const verificationResult: VerificationResult = {
-      score: data.verification.score,
-      verdict: data.verification.verdict,
-      input: data.input,
-      analysis: data.verification.analysis,
-      sources,
     };
 
-    handleResult(verificationResult);
-  };
-
-  const handleCheckLink = async (
-    url: string
-  ) => {
-    if (!user) {
-      navigate('/signin');
-      return;
-    }
-
-    const response = await fetch(
-      `${import.meta.env.VITE_API_BASE_URL}/api/check-link`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          url: url.trim(),
-        }),
+  /*
+   * Link checker
+   */
+  const handleCheckLink =
+    async (url: string) => {
+      if (!user) {
+        navigate('/signin');
+        return;
       }
-    );
 
-    const data = await response.json();
+      const response =
+        await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/check-link`,
+          {
+            method: 'POST',
 
-    if (!response.ok) {
-      throw new Error(
-        data.detail ||
-          'Link check failed.'
+            headers: {
+              'Content-Type':
+                'application/json',
+            },
+
+            body: JSON.stringify({
+              url: url.trim(),
+            }),
+          }
+        );
+
+      const data =
+        await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.detail ||
+            'Link check failed.'
+        );
+      }
+
+      setLinkCheckResult(data);
+
+      navigate(
+        '/link-check'
       );
-    }
+    };
 
-    setLinkCheckResult(data);
-    navigate('/link-check');
-  };
-
-  const handleNavigate = (page: string) => {
-    navigate(page);
-  };
+  const handleNavigate =
+    (page: string) => {
+      navigate(page);
+    };
 
   return (
     <div className="min-h-screen bg-[#f4f0e8] text-[#171717]">
+
       <Navbar
         page={
-          location.pathname.replace('/', '') ||
-          'home'
+          location.pathname.replace(
+            '/',
+            ''
+          ) || 'home'
         }
-        onNavigate={handleNavigate}
+        onNavigate={
+          handleNavigate
+        }
         isLoggedIn={!!user}
-        onSignOut={handleSignOut}
+        onSignOut={
+          handleSignOut
+        }
       />
 
       <Routes>
+
         {/* HOME */}
+
         <Route
           path="/"
           element={
             <HomePage
-              onVerify={handleHomeVerify}
-              onCheckLink={handleCheckLink}
+              onVerify={
+                handleHomeVerify
+              }
+              onCheckLink={
+                handleCheckLink
+              }
               onExplore={() =>
-                navigate('/explore')
+                navigate(
+                  '/explore'
+                )
               }
             />
           }
         />
 
-        {/* LIVE VERIFICATION RESULT */}
+        {/* LIVE RESULT */}
+
         <Route
           path="/result"
           element={
-            <ProtectedRoute user={user}>
+            <ProtectedRoute
+              user={user}
+            >
               {result ? (
                 <ResultPage
                   result={result}
@@ -404,10 +548,13 @@ function AppContent() {
         />
 
         {/* SAVED REPORT */}
+
         <Route
           path="/result/:reportId"
           element={
-            <ProtectedRoute user={user}>
+            <ProtectedRoute
+              user={user}
+            >
               <SavedReportPage
                 onAnother={() =>
                   navigate('/')
@@ -418,13 +565,18 @@ function AppContent() {
         />
 
         {/* LINK CHECKER */}
+
         <Route
           path="/link-check"
           element={
-            <ProtectedRoute user={user}>
+            <ProtectedRoute
+              user={user}
+            >
               {linkCheckResult ? (
                 <LinkCheckPage
-                  result={linkCheckResult}
+                  result={
+                    linkCheckResult
+                  }
                   onAnother={() =>
                     navigate('/')
                   }
@@ -440,51 +592,76 @@ function AppContent() {
         />
 
         {/* EXPLORE */}
+
         <Route
           path="/explore"
-          element={<ExplorePage />}
+          element={
+            <ExplorePage />
+          }
         />
 
         {/* ABOUT */}
+
         <Route
           path="/about"
-          element={<AboutPage />}
+          element={
+            <AboutPage />
+          }
         />
 
         {/* SIGN IN */}
+
         <Route
           path="/signin"
           element={
             <SignInPage
-              onNavigate={handleNavigate}
+              onNavigate={
+                handleNavigate
+              }
+              onSuccess={() =>
+                navigate(
+                  '/dashboard'
+                )
+              }
             />
           }
         />
 
         {/* SIGN UP */}
+
         <Route
           path="/signup"
           element={
             <SignUpPage
-              onNavigate={handleNavigate}
+              onNavigate={
+                handleNavigate
+              }
             />
           }
         />
 
         {/* DASHBOARD */}
+
         <Route
           path="/dashboard"
           element={
-            <ProtectedRoute user={user}>
+            <ProtectedRoute
+              user={user}
+            >
               <DashboardPage
-                onNavigate={handleNavigate}
-                onSignOut={handleSignOut}
+                onNavigate={
+                  handleNavigate
+                }
+                onSignOut={
+                  handleSignOut
+                }
               />
             </ProtectedRoute>
           }
         />
 
         {/* FALLBACK */}
+
         <Route
           path="*"
           element={
@@ -494,6 +671,7 @@ function AppContent() {
             />
           }
         />
+
       </Routes>
 
       <Footer />
