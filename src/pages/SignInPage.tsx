@@ -3,7 +3,10 @@ import { ArrowRight } from 'lucide-react';
 
 import Logo from '@/components/layout/Logo';
 import SectionEyebrow from '@/components/layout/SectionEyebrow';
-import { signIn } from '@/services/auth';
+import {
+  signIn,
+  signInWithGoogle,
+} from '@/services/auth';
 
 interface SignInPageProps {
   onNavigate: (page: string) => void;
@@ -59,6 +62,27 @@ export default function SignInPage({
         <p>
           Pick up where your last investigation left off.
         </p>
+        <button
+          type="button"
+          className="google-button"
+          onClick={async () => {
+            setError('');
+
+            const { error } =
+              await signInWithGoogle();
+
+            if (error) {
+              setError(error.message);
+            }
+          }}
+        >
+          <span className="google-mark">G</span>
+          Continue with Google
+        </button>
+
+        <div className="auth-divider">
+          <span>OR</span>
+        </div>
 
         <form onSubmit={handleSubmit}>
           <label>

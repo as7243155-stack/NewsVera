@@ -2899,3 +2899,54 @@ input::placeholder {
   background: var(--red);
   display: inline-block;
 }
+.google-button {
+  width: 100%;
+  min-height: 44px;
+  margin-top: 24px;
+  padding: 0 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 1px solid var(--ink);
+  background: #fffdf8;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+  transition:
+    transform .2s,
+    box-shadow .2s,
+    background .2s;
+}
+
+.google-button:hover {
+  background: #f1eee6;
+  transform: translateY(-1px);
+}
+
+.google-mark {
+  font-family: Arial, sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 22px 0 4px;
+  color: #9a958a;
+  font: 10px 'DM Mono', monospace;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+.auth-divider span {
+  flex: 0 0 auto;
+}

@@ -3,7 +3,10 @@ import { ArrowRight } from 'lucide-react';
 
 import Logo from '@/components/layout/Logo';
 import SectionEyebrow from '@/components/layout/SectionEyebrow';
-import { signUp } from '@/services/auth';
+import {
+  signUp,
+  signInWithGoogle,
+} from '@/services/auth';
 
 interface SignUpPageProps {
   onNavigate: (page: 'home' | 'signin') => void;
@@ -74,6 +77,27 @@ export default function SignUpPage({
           Save your reports and keep your investigations
           in one place.
         </p>
+        <button
+          type="button"
+          className="google-button"
+          onClick={async () => {
+            setError('');
+
+            const { error } =
+              await signInWithGoogle();
+
+            if (error) {
+              setError(error.message);
+            }
+          }}
+        >
+          <span className="google-mark">G</span>
+          Continue with Google
+        </button>
+
+        <div className="auth-divider">
+          <span>OR</span>
+        </div>
 
         <form onSubmit={handleSubmit}>
           <label>

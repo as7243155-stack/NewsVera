@@ -20,6 +20,15 @@ export async function signIn(
   });
 }
 
+export async function signInWithGoogle() {
+  return supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: `${window.location.origin}/dashboard`,
+    },
+  });
+}
+
 export async function signOut() {
   return supabase.auth.signOut();
 }
