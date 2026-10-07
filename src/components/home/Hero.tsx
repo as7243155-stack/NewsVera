@@ -161,11 +161,11 @@ export default function Hero({
           ? extractedText.split(/\s+/).length
           : 0;
 
-      if (wordCount < 5) {
+      if (wordCount < 10) {
         setValue(extractedText);
 
         setError(
-          'We could not extract enough readable text from this image. Please upload a clearer screenshot containing at least 5 words.'
+          'We could not extract enough readable text from this image. Please upload a clearer screenshot containing at least 10 words.'
         );
 
         return;
@@ -231,9 +231,9 @@ export default function Hero({
         return;
       }
 
-      if (words < 5) {
+      if (words < 10) {
         setError(
-          'We need at least 5 readable words from the image before we can verify it.'
+          'We need at least 10 readable words from the image before we can verify it.'
         );
         return;
       }

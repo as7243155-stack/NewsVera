@@ -144,6 +144,8 @@ export default function HomePage({
           'Verification failed:',
           error
         );
+
+        throw error;
       } finally {
         setIsAnalyzing(false);
       }

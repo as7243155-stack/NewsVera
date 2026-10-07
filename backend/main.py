@@ -184,7 +184,7 @@ def verify(request: VerifyRequest):
         search_query = (
             search_query
             if request.mode == "url"
-            else claim_text
+            else claim_text.strip()[:1000]
         )
 
         search_results = search_web(
