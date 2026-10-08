@@ -52,6 +52,7 @@ def _tavily_search(
     payload = {
         "query": query,
         "topic": "news",
+        "days": 7,
         "search_depth": "basic",
         "max_results": max_results,
         "include_answer": False,
